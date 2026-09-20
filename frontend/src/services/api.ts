@@ -7,8 +7,9 @@ import {
   WBSTask
 } from '../types'
 
-// Dynamic environment-based API base URL with fallback to local proxy
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api'
+// Dynamic API Server URL using VITE_API_URL with localhost:8000 fallback
+const API_SERVER = (import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/$/, '')
+const API_BASE_URL = `${API_SERVER}/api`
 
 const client = axios.create({
   baseURL: API_BASE_URL,
@@ -38,7 +39,7 @@ export const api = {
     sourceType: 'text' | 'voice' = 'text',
     reportedBy: string = 'Site Field Engineer'
   ): Promise<IngestResponse> {
-    const res = await client.post<IngestResponse>('/ingest', {
+    const res = await client.post<IngestResponse>(`${API_BASE_URL}/ingest`, {
       raw_text: rawText,
       source_type: sourceType,
       reported_by: reportedBy
@@ -54,7 +55,7 @@ export const api = {
     formData.append('file', audioBlob, 'recording.webm')
     formData.append('reported_by', reportedBy)
 
-    const res = await client.post('/transcribe', formData, {
+    const res = await client.post(`${API_BASE_URL}/transcribe`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       }
@@ -75,7 +76,7 @@ export const api = {
     progress_percent?: number
     comments?: string
   }): Promise<{ status: string; message: string; task_id: string }> {
-    const res = await client.post('/approve-match', payload)
+    const res = await client.post(`${API_BASE_URL}/approve-match`, payload)
     return res.data
   },
 
@@ -91,16 +92,16 @@ export const api = {
     initial_status?: string
     progress_percent?: number
   }): Promise<{ status: string; message: string; task: WBSTask }> {
-    const res = await client.post('/create-task', payload)
+    const res = await client.post(`${API_BASE_URL}/create-task`, payload)
     return res.data
   },
 
   async dismissQueueItem(queueId: string): Promise<void> {
-    await client.delete(`/review-queue/${queueId}`)
+    await client.delete(`${API_BASE_URL}/review-queue/${queueId}`)
   },
 
   async queryMemory(query: string, discipline?: string): Promise<MemoryQueryResponse> {
-    const res = await client.post<MemoryQueryResponse>('/memory-query', {
+    const res = await client.post<MemoryQueryResponse>(`${API_BASE_URL}/memory-query`, {
       query,
       discipline: discipline && discipline !== 'ALL' ? discipline : undefined,
       limit: 3
@@ -109,6 +110,6 @@ export const api = {
   },
 
   async resetDemoBaseline(): Promise<void> {
-    await client.post('/reset-demo')
+    await client.post(`${API_BASE_URL}/reset-demo`)
   }
 }
