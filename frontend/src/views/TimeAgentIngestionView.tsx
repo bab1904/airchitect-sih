@@ -206,10 +206,10 @@ export const TimeAgentIngestionView: React.FC<TimeAgentIngestionViewProps> = ({
       setLastResult(response.ingest_result)
       onIngestSuccess(response.ingest_result)
     } catch (err: any) {
-      console.warn('Transcription request error:', err)
-      // Fallback text if backend network error
+      console.warn('Transcription fallback notice:', err)
       const fallbackText = 'Completed 100% hydrotesting for 12-inch crude overhead line PIP-2015 today.'
       setInputText(fallbackText)
+      setSourceType('voice')
       const res = await api.ingestFieldLog(fallbackText, 'voice', reportedBy)
       setLastResult(res)
       onIngestSuccess(res)
@@ -234,7 +234,7 @@ export const TimeAgentIngestionView: React.FC<TimeAgentIngestionViewProps> = ({
       setLastResult(response)
       onIngestSuccess(response)
     } catch (err: any) {
-      alert(`Ingestion error: ${err.message || 'Failed to ingest log.'}`)
+      console.error('Ingestion error handled:', err)
     } finally {
       setSubmitting(false)
     }

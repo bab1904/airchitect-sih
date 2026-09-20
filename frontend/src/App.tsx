@@ -35,22 +35,19 @@ export default function App() {
 
   const fetchAllData = async () => {
     setRefreshing(true)
+    setLoadingSchedule(true)
+    setLoadingQueue(true)
     try {
       const isOnline = await api.checkHealth()
       setBackendOnline(isOnline)
 
-      if (isOnline) {
-        setLoadingSchedule(true)
-        setLoadingQueue(true)
+      const [sched, queue] = await Promise.all([
+        api.getSchedule(),
+        api.getReviewQueue()
+      ])
 
-        const [sched, queue] = await Promise.all([
-          api.getSchedule().catch(() => null),
-          api.getReviewQueue().catch(() => [])
-        ])
-
-        if (sched) setScheduleData(sched)
-        if (queue) setReviewQueue(queue)
-      }
+      if (sched) setScheduleData(sched)
+      if (queue) setReviewQueue(queue)
     } catch (err) {
       console.error('Data fetch error:', err)
     } finally {
